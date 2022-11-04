@@ -1,19 +1,22 @@
 from enum import Enum
 
-RESERVED_WORDS = ['int', 'char', 'if', 'else', 'for', 'while', 'return']
+RESERVED_WORDS = ['if','while','for','return','int','char','else']
 
-BIN_OPS = ['+', '-', '*', '/']
+SEPARATORS = ['(', ')', '{', '}', '[', ']', ';', ',']
 
-# TODO: Igualdade é relacional?
 REL_OP = ['<', '>', '==', '!=', '<=', '>=', '=']
 
 LOGIC_OP = ['&&', '||']
 
-SEPARATORS = ['(', ')', '{', '}', '[', ']', ';', ',']
+BIN_OPS = ['+', '-', '*', '/']
+
+
+
+
 
 ALL_ELEMENTS = BIN_OPS + REL_OP + LOGIC_OP + SEPARATORS
 
-TYPE_BY_OPERATORS = {
+OPERATORS = {
     '+': 'SUM',
     '-': 'SUB',
     '': 'MUL',

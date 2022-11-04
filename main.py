@@ -1,245 +1,197 @@
-from constants import STATES, ALL_ELEMENTS, BIN_OPS , TYPE_BY_OPERATORS
+from constants import STATES, ALL_ELEMENTS, BIN_OPS , OPERATORS
 import re
-import utils
+import methods
 
 flag=0
 line = 0
 column = 0
-state = STATES.INITIAL
-response_token = []
+estado = STATES.INITIAL
+answer = []
 token = ""
 numeric_token = ""
-acumula = ""
+comment = ""
 
-def open_file():
-    """Abre o arquivo de entrada"""
-    try:
-        return open("teste.c", "r")
-    except Exception as e:
-        print("Erro ao abrir o arquivo")
-        exit(1)
-
-def append_identifier(token):
-    tipo = TYPE_BY_OPERATORS.get(token)
+def addId(token):
+    tipo = OPERATORS.get(token)
     if tipo is not None:
-        response_token.append([tipo, token])
+        answer.append([tipo, token])
     elif re.match(r"[\d]", token):
-        response_token.append(["NUMBER",token])
+        answer.append(["NUMBER",token])
     else:
-        response_token.append(["ID", token])
+        answer.append(["ID", token])
 
-def append_identifier_double(token):
+def addId_double(token):
     global flag
-    if re.match(r"[\=]", token) and line_iterator[column] == "=" :
+    if re.match(r"[\=]", token) and curr_line[column] == "=" :
         
         flag = 1
-        append_identifier("==")
-        cursor = line_iterator[column]
+        addId("==")
+        elem = curr_line[column]
     
-    elif re.match(r"[\<]", token) and line_iterator[column] == "=" :
+    elif re.match(r"[\<]", token) and curr_line[column] == "=" :
         flag = 1
-        append_identifier("<=")
-        cursor = line_iterator[column]
+        addId("<=")
+        elem = curr_line[column]
     
-    elif re.match(r"[\>]", token) and line_iterator[column] == "=" :
+    elif re.match(r"[\>]", token) and curr_line[column] == "=" :
         flag = 1
-        append_identifier(">=")
-        cursor = line_iterator[column]
+        addId(">=")
+        elem = curr_line[column]
     
-    elif re.match(r"[\&]", token) and line_iterator[column] == "&" :
+    elif re.match(r"[\&]", token) and curr_line[column] == "&" :
         flag = 1
-        append_identifier("&&")
-        cursor = line_iterator[column]
+        addId("&&")
+        elem = curr_line[column]
     
-    elif re.match(r"[\|]", token) and line_iterator[column] == "|" :
+    elif re.match(r"[\|]", token) and curr_line[column] == "|" :
         flag = 1
-        append_identifier("||")
-        cursor = line_iterator[column]
+        addId("||")
+        elem = curr_line[column]
 
-    elif re.match(r"[\!]", token) and line_iterator[column] == "=" :
+    elif re.match(r"[\!]", token) and curr_line[column] == "=" :
         flag = 1
-        append_identifier("!=")
-        cursor = line_iterator[column]
+        addId("!=")
+        elem = curr_line[column]
                         
     else:
       
         
-        append_identifier(token)
+        addId(token)
         
 
 
-def append_error(token):
-    """Adiciona o erro na lista de tokens"""
+def addError(token):
     if token != "\n" and token != " ":
-        response_token.append(["Token não reconhecido", token])
+        answer.append(["Token não existe", token])
 
 
 
-input_file = open_file()
+input_file = open("example.c", "r")
+
 if __name__ == '__main__':
 
-    for line_iterator in input_file:
+    for curr_line in input_file:
         line = line + 1
         column = 0
-        for cursor in line_iterator:
+        for elem in curr_line:
             column = column + 1
             if flag == 1:
                 flag = 0
                 continue
 
 
-            if state == STATES.INITIAL: #OK
-                if cursor == "/" and line_iterator[column] == "*" and state == STATES.INITIAL and state != STATES.COMMENT:
-                    state = STATES.COMMENT
-                    append_identifier("/*")
+            if estado == STATES.INITIAL: 
+                if elem == "/" and curr_line[column] == "*" and estado == STATES.INITIAL and estado != STATES.COMMENT:
+                    estado = STATES.COMMENT
+                    addId("/*")
 
-                if re.search(r"^(#)", line_iterator) and state == STATES.INITIAL and state != STATES.COMMENT:
+                if re.search(r"^(#)", curr_line) and estado == STATES.INITIAL and estado != STATES.COMMENT:
                     break
 
-                if re.search(r"([A-Za-z_])", cursor) and state == STATES.INITIAL and state != STATES.COMMENT:
-                    state = STATES.IDENTIFIER
+                if re.search(r"([A-Za-z_])", elem) and estado == STATES.INITIAL and estado != STATES.COMMENT:
+                    estado = STATES.IDENTIFIER
 
-                if re.match(r"[0-9]", cursor) and state == STATES.INITIAL and state != STATES.COMMENT:
-                    state = STATES.NUMERIC  # Constante Numérica
-                if re.match(r"[\"]", cursor) and state == STATES.INITIAL and state != STATES.COMMENT:
-                    state = STATES.LITERAL
-                
-                
-                if utils.is_number(cursor) and utils.is_special_caracter(cursor) and state == STATES.INITIAL and state != STATES.COMMENT:
-                    
-                    
-                    if not utils.is_error(cursor):
-                       
-                       
-                        append_identifier_double(cursor)
+                if re.match(r"[0-9]", elem) and estado == STATES.INITIAL and estado != STATES.COMMENT:
+                    estado = STATES.NUMERIC
+                if re.match(r"[\"]", elem) and estado == STATES.INITIAL and estado != STATES.COMMENT:
+                    estado = STATES.LITERAL                                
+                if methods.is_number(elem) and methods.is_special_caracter(elem) and estado == STATES.INITIAL and estado != STATES.COMMENT:                                       
+                    if not methods.is_error(elem):                                              
+                        addId_double(elem)
                         if flag == 1:
-                            continue
+                            continue                        
                         
-                        
-                    else:
-                        
-                        if cursor == '&' and line_iterator[column] == "&":
-                            append_identifier_double(cursor)
-                        
-                        elif cursor == '|' and line_iterator[column] == "|":
-                            append_identifier_double(cursor)
-                        
-                        elif cursor == "!" and line_iterator[column] == "=":
-                                        append_identifier_double(cursor)
-                        
-                        
-                        else:
-                            
-                            append_error(cursor)
+                    else:                       
+                        if elem == '&' and curr_line[column] == "&":
+                            addId_double(elem)                        
+                        elif elem == '|' and curr_line[column] == "|":
+                            addId_double(elem)                        
+                        elif elem == "!" and curr_line[column] == "=":
+                            addId_double(elem)                       
+                        else:                           
+                            addError(elem)
             
             
 
 
-            if state == STATES.COMMENT: #OK
-                # TODO: Validar se comentário não ficou com / pendente
-                acumula = acumula + cursor
-                if re.search(r"(\*\/)", acumula):
-                    state = STATES.INITIAL
-                    append_identifier("*/")
+            if estado == STATES.COMMENT:
+                comment = comment + elem
+                if re.search(r"(\*\/)", comment):
+                    estado = STATES.INITIAL
+                    addId("*/")
                     
-
-
-
-            if state == STATES.IDENTIFIER:
-                
-                if re.match(r"([\w])", cursor):
-                    token = token + cursor
-                    
-                if utils.is_special_caracter(cursor):
-                    state = STATES.INITIAL
-                   
-                    if utils.is_reserved_word(token):
-                        
-                        append_identifier(token)
-                        if cursor != " ":
-                            if not utils.is_error(token):
-                                
-                                
-                                append_identifier_double(cursor)
-                               
-
-                                
-                            else:
-                                append_error(token)
-                        token = ""
-                    else:
-                       
-                        
-                        append_identifier(token)
-                        if utils.is_special_caracter(cursor):
-                            
-                            """Vai inserir o k como separador """
-                            if cursor != re.match(r"\s", cursor):
-                                
-                                if not utils.is_error(cursor):
-                                    
-                                    
-                                    append_identifier_double(cursor)
-                                    
-
-                                    
-                                else:
-                                    if cursor == "!" and line_iterator[column] == "=":
-                                        append_identifier_double(cursor)
-                                    else:
-                                        append_error(cursor)
-                            state = STATES.INITIAL
-                        token = ""
-
-            if state == STATES.LITERAL: 
-                
-                if re.match(r"[%a-zA-z0-9\"\s]", cursor):
-                    token = token + cursor
-                if re.match(r"[\"]", cursor):
-                    lit = re.match(r"[\"]+[%\w\s]+[\"]*", token)
-                    if lit is not None:
-                        append_identifier(lit.group())
-                        token = ""
-                        state = STATES.INITIAL
-
-
-
-            if state == STATES.NUMERIC: 
-                if re.match(r"[\w.]", cursor):
-                    numeric_token = numeric_token + cursor
-                if utils.is_number(cursor):
+            if estado == STATES.NUMERIC: 
+                if re.match(r"[\w.]", elem):
+                    numeric_token = numeric_token + elem
+                if methods.is_number(elem):
                     if re.match(r"(^[0-9]*$)", numeric_token):
                         if re.match(r"(^[0-9]*$)", numeric_token) is not None:
-                            append_identifier(numeric_token)
-                            if cursor != " ":
-                                if not utils.is_error(cursor):
-                                    append_identifier_double(cursor)
-
-                                    
-
-                                  
+                            addId(numeric_token)
+                            if elem != " ":
+                                if not methods.is_error(elem):
+                                    addId_double(elem)     
                                 else:
-                                    append_error(cursor)
-                            state = STATES.INITIAL
+                                    addError(elem)
+                            estado = STATES.INITIAL
                             numeric_token = ""
                     else:
-                        if cursor in ALL_ELEMENTS or re.match(r"\s|\n", cursor) or cursor in BIN_OPS:
-                            """Identifica o token inválido"""
-                            append_error(cursor)
+                        if elem in ALL_ELEMENTS or re.match(r"\s|\n", elem) or elem in BIN_OPS:
+                            addError(elem)
                             numeric_token = ""
-                            state = STATES.INITIAL
+                            estado = STATES.INITIAL
                 else:
-                    if utils.is_number(cursor):
-                        "Armazena token de separadores"
-                        if cursor != " ":
-                            if not utils.is_error(cursor):
+                    if methods.is_number(elem):
+                        if elem != " ":
+                            if not methods.is_error(elem):
                                 
-                                append_identifier_double(cursor)
+                                addId_double(elem)
                             else:
-                                append_error(cursor)
-                        state = STATES.INITIAL
+                                addError(elem)
+                        estado = STATES.INITIAL
+
+
+            if estado == STATES.IDENTIFIER:                
+                if re.match(r"([\w])", elem):
+                    token = token + elem                    
+                if methods.is_special_caracter(elem):
+                    estado = STATES.INITIAL                  
+                    if methods.is_reserved_word(token):                        
+                        addId(token)
+                        if elem != " ":
+                            if not methods.is_error(token):                                                            
+                                addId_double(elem)                                     
+                            else:
+                                addError(token)
+                        token = ""
+                    else:          
+                        addId(token)
+                        if methods.is_special_caracter(elem):
+                            if elem != re.match(r"\s", elem):
+                                if not methods.is_error(elem):  
+                                    addId_double(elem)    
+                                else:
+                                    if elem == "!" and curr_line[column] == "=":
+                                        addId_double(elem)
+                                    else:
+                                        addError(elem)
+                            estado = STATES.INITIAL
+                        token = ""
+
+            if estado == STATES.LITERAL:  
+                if re.match(r"[%a-zA-z0-9\"\s]", elem):
+                    token = token + elem
+                if re.match(r"[\"]", elem):
+                    lit = re.match(r"[\"]+[%\w\s]+[\"]*", token)
+                    if lit is not None:
+                        addId(lit.group())
+                        token = ""
+                        estado = STATES.INITIAL
+
+
+
+            
 
 
 
 
-    print(response_token)
+    print(answer)
