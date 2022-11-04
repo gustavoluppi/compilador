@@ -3,26 +3,19 @@
 Analisador Lexico
 Arquivo de teste
 */
-|
-&
-!=
-!
 
-
-int main() {
-  int INT==8,if=0;
-  if(teste && coisa || outraCoisa){
-    int a >0;
-    a>=0
-    a<=0
-    a!=0
-  }
-  else{
-    int a=5;
+int main()
+{
+  char palavra;
+  int c = 8;
+  if (c == 8 || c == 7)
+  {
+    int a = 0;
+    while (a < 10)
+    {
+      int e = 2;
+    }
   }
 
-  $
-  while( x=0 ) 
-  
   return 0;
 }
